@@ -33,6 +33,8 @@ int writeTo(string str, int val);
 
 int readFrom(string str){
 	int val = -1;
+	if(str.compare(0,2,"-1") == 0)
+		return val;
     ifstream file(str);
 	// Initializes input file stream to the path specified.
     if (file.is_open()){
@@ -45,6 +47,8 @@ int readFrom(string str){
 }
 
 int writeTo(string str, string val){
+	if(str.compare(0,2,"-1") == 0)
+		return -1;
     ofstream fs(str);
 	// Initializes output file stream to the path specified.
     if (fs.is_open()){
@@ -61,6 +65,8 @@ int writeTo(string str, string val){
 }
 
 int writeTo(string str, int val){
+	if(str.compare(0,2,"-1") == 0)
+		return -1;
     ofstream fs(str);
 	// Initializes output file stream to the path specified.
     if (fs.is_open()){
@@ -76,9 +82,12 @@ int writeTo(string str, int val){
 	// If everything goes as planned return 0.
 }
 
-Adc::Adc(int pin) {
-	devicePath << path1 << pin << path2;
-	// Combines the path, with the channel number specified.
+Adc::Adc(unsigned int channel) {
+	if(channel < 7)
+		devicePath << path1 << channel << path2;
+		// Combines the path, with the channel number specified.
+	else
+		devicePath << "-1";
 }
 
 int Adc::read() {
@@ -101,34 +110,37 @@ double Measurement::temperature() {
 	// Reads from ADC converts into celcius
 }
 
-Pwm::Pwm(int channel) {
-	devicePath << path1;
-	// Writes path1 to the stringstream devicePath.
-	switch(channel) {
-	case 0:
-		devicePath << "0:0/";
-		break;
-		// If channel == 0 add path to PWM channel 0 to devicePath
-	case 1:
-		devicePath << "2:0/";
-		break;
-		// If channel == 1 add path to PWM channel 1A to devicePath
-	case 2:
-		devicePath << "4:1/";
-		break;
-		// If channel == 2 add path to PWM channel 1B to devicePath
-	case 3:
-		devicePath << "7:0/";
-		break;
-		// If channel == 3 add path to PWM channel 2A to devicePath
-	case 4:
-		devicePath << "7:1/";
-		break;
-		// If channel == 4 add path to PWM channel 2B to devicePath
-	default:
-		break;
+Pwm::Pwm(unsigned int channel) {
+	if(channel < 5) {
+		devicePath << path1;
+		// Writes path1 to the stringstream devicePath.
+		switch(channel) {
+		case 0:
+			devicePath << "0:0/";
+			break;
+			// If channel == 0 add path to PWM channel 0 to devicePath
+		case 1:
+			devicePath << "2:0/";
+			break;
+			// If channel == 1 add path to PWM channel 1A to devicePath
+		case 2:
+			devicePath << "4:1/";
+			break;
+			// If channel == 2 add path to PWM channel 1B to devicePath
+		case 3:
+			devicePath << "7:0/";
+			break;
+			// If channel == 3 add path to PWM channel 2A to devicePath
+		case 4:
+			devicePath << "7:1/";
+			break;
+			// If channel == 4 add path to PWM channel 2B to devicePath
+		default:
+			break;
+		}
 	}
-
+	else
+		devicePath << "-1";
 }
 
 void Pwm::period(int hz) {
@@ -165,7 +177,7 @@ Pwm::~Pwm(){
 	// Stops PWM output.
 }
 
-DCmotor::DCmotor(int channel) : Pwm(channel){
+DCmotor::DCmotor(unsigned int channel) : Pwm(channel){
 	period(100);
 	// Sets Period of 100Hz
 	polarity("inversed");

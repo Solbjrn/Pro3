@@ -48,7 +48,7 @@ protected:
 	stringstream devicePath;
 	///< Stringstream containing the full path created by the constructor.
 public:
-	explicit Adc(int channel);	
+	explicit Adc(unsigned int channel);
 	///< Constructor. Completes the full path for one of the 7 ADC channels on
 	///< the pocketBeagle \param channel - An integer between 0 and 6 
 	///< representing the ADC channel.
@@ -68,7 +68,7 @@ class Measurement: public Adc {
 public: 
 	/// Constructor. Same as the the Adc constructor \param channel - An 
 	///< integer between 0 and 6 representing the ADC channel.						
-	Measurement(int channel) : Adc(channel){};
+	Measurement(unsigned int channel) : Adc(channel){};
 
 	double voltage(); 		
 	///< Takes a measurement from the ADC converts the raw value to the voltage
@@ -76,8 +76,8 @@ public:
 	///<
 	///< The equation used to calculate voltage
 	///< \f{eqnarray*}{ Voltage &=& Raw\_ADC \times \frac {VREF}
-	///			{ADC\_RESOLUTION} \times \frac {MOTOR\_VOLTAGE}{VREF}\\ \\  
-	///							&=& Raw\_ADC \times \frac {1.8} {4096}\times 
+	///			{ADC\_RESOLUTION} \times \frac {MOTOR\_VOLTAGE}{VREF}
+	///						\\ \\&=& Raw\_ADC \times \frac {1.8} {4096}\times
 	///								\frac {24}{1.8}\f}
 	///< \return Voltage in volts between 0 - 24V. Measured by the voltage
 	///  circuit.
@@ -132,7 +132,7 @@ public:
 	/// Constructor. Completes the full path for one of the 5 PWM channels on
 	///< the pocketBeagle \param channel - An integer between 0 and 4
 	///< representing the PWM channel.
-	explicit Pwm(int channel);
+	explicit Pwm(unsigned int channel);
 	virtual ~Pwm();
 	///< \details Deconstructor. Turns off output.
 
@@ -168,7 +168,7 @@ public:
 	///< the pocketBeagle. Sets the period to 100Hz and the polarity to
 	///< inverted \param channel - An integer between 0 and 4 representing the
 	///< PWM channel.
-	DCmotor(int channel);
+	DCmotor(unsigned int channel);
 };
 
 /// The Gpio class. Constructor creates object, which is tied to a GPIO pin.
