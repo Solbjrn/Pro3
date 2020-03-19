@@ -107,9 +107,10 @@ public:
 /// Has one function that reads from the PWM channel specified by constructor.
 ///
 /// \attention In order to enable pwm on the Beagle Bone Black, you must 
-/// configure the pin to pwm before running the program using the shell command:
+/// configure the pin to pwm before running the program using the shell commands:
 //
-///  \code{.unparsed} configure-pin -q <PIN_LOCATION> pwm\endcode
+///  \code{.unparsed} configure-pin <PIN_LOCATION> pwm\endcode
+///  \code{.unparsed} configure-pin -q <PIN_LOCATION>\endcode
 ///
 /// The following table shows correlation between the pin location, PWM 
 /// channel name and the number used in the PWM constructor.
