@@ -1,23 +1,17 @@
-///////////////////////////////////////////////////////////////////////////////
-/// \file		states.cpp
-///				Contains the functions defining the states for the state 
-///				machine used in the PRO4 projekt at Electrical Engineering at 
-///				AU
-///				Herning.
-/// \author		Christoffer Wesselhoff
-/// \author		Kasper Jensen
-/// \date		07/04-2020
-/// \version	1.0
-///////////////////////////////////////////////////////////////////////////////
+/*
+ * states.cpp
+ *
+ *  Created on: 1 Apr 2020
+ *      Author: Christoffer
+ */
 
 #include"startup.h"
 #include"states.h"
 #include<thread>
 #include<chrono>
 
-int testConnection(void);
-///< Runs the internet test script. 
-///< \return exit value from internet test script.
+#define IDLE_WAIT 5
+#define INTERNET_TEST "/home/blob/internettest.sh"
 
 int testConnection(void) {
 	int ret = system(INTERNET_TEST);
@@ -25,9 +19,7 @@ int testConnection(void) {
 }
 
 enum state powerOnState(void){
-	// Checks whether its an Pocketbeagle or Beaglebone black
 	int machine = whichMachine();
-	// If pocketbeagle set up P1-31 and P1-33
 	if(machine == 1) {
 		if(!configPin("P1-31","qep")) {
 			return error_pin;
@@ -36,7 +28,6 @@ enum state powerOnState(void){
 			return error_pin;
 		}
 	}
-	// If Beaglebone Black set up P1-31 and P1-33
 	else if (machine == 0) {
 		if(!configPin("P8-35","qep")) {
 			return error_pin;
@@ -45,11 +36,9 @@ enum state powerOnState(void){
 			return error_pin;
 		}
 	}
-	// On sucess return idle as next state
 	if (testConnection() == 0) {
 		return idle;
 	}
-	// On failure return error_connection as next state
 	else {
 		return error_connection;
 	}
@@ -57,10 +46,8 @@ enum state powerOnState(void){
 
 enum state idleState(void){
 	while(1){
-		// If test is recieved return start test as next state
 		if (testConfig.isRecieved)
 			return start_test;
-		// Else sleep and test internet connection
 		else{
 			std::this_thread::sleep_for(std::chrono::seconds(IDLE_WAIT));
 			if (testConnection() != 0)

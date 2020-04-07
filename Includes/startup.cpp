@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 /// \file		startup.cpp
-///				Contains the functions configPin and whichMachine
+///				Containing the functions configPin and whichMachine
 ///				used in the PRO4 projekt at Electrical Engineering at AU
 ///				Herning.
 /// \author		Christoffer Wesselhoff
