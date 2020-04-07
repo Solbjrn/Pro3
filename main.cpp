@@ -7,34 +7,48 @@
 /// \version	1.0
 ///////////////////////////////////////////////////////////////////////////////
 
-#include"includes/startup.h"
 #include<stdlib.h>
 #include<stdio.h>
+#include "includes/startup.h"
+#include "includes/states.h"
 
 using namespace std;
 
 int main(void) {
-	int machine = whichMachine();
-	if(machine == 1) {
-		if(!configPin("P1-31","qep")) {
-			return 1;
-		}
-		if(!configPin("P1-33","pwm")) {
-			return 1;
+	bool exitvar = false;
+	state current_state, next_state;
+	current_state = power_on;
+	while(!exitvar) {
+		current_state = next_state;
+		switch(current_state){
+		case power_on:
+			cout << "poweron" << endl;
+			next_state = powerOnState();
+			break;
+		case idle:
+			next_state = idleState();
+			break;
+		case error_connection:
+			cout << "errorstate" << endl;
+			ErrorConnectionState();
+			//debug
+			exitvar = true;
+			break;
+		case error_pin:
+			ErrorPinState();
+			//debug
+			exitvar = true;
+			break;
+		case start_test:
+			//debug
+			cout << "Test started" << endl;
+			exitvar = true;
+			break;
+		default:
+			exitvar = true;
+			break;
 		}
 	}
-	else if (machine == 0) {
-		if(!configPin("P8-35","qep")) {
-			return 1;
-		}
-		if(!configPin("P9-14","pwm")) {
-			return 1;
-		}
-	}
-	int i, ret = system("/home/blob/internettest.sh");
-	i = WEXITSTATUS(ret);
-	std::cout << endl << i << endl;
-
 	return 0;
 }
 

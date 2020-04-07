@@ -1,14 +1,16 @@
 ///////////////////////////////////////////////////////////////////////////////
 /// \file		startup.cpp
-///				Source file containing the implematations of the functions 
-///				configPin and whichMachine used in the PRO4 projekt at 
-///				Electrical Engineering at AU Herning.
+///				Contains the functions configPin and whichMachine
+///				used in the PRO4 projekt at Electrical Engineering at AU
+///				Herning.
 /// \author		Christoffer Wesselhoff
 /// \author		Kasper Jensen
 /// \date		27/03-2020
 /// \version	1.0
 ///////////////////////////////////////////////////////////////////////////////
-#include"startup.h"
+
+#include "../includes/startup.h"
+
 
 bool configPin(string pin, string mode){
 	stringstream commnd;			    // Stringsteam containing shell command
