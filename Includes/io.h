@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 /// \file		io.h
 ///				Header file containing the classes ADC, PWM and GPIO and the
-///				derived classes Measurement and DCmotor used in the PRO4 
-///				projekt at Electrical Engineering at AU Herning. 
+///				derived classes Voltage, Current, Temperature and DCmotor used
+///				in the PRO4 projekt at Electrical Engineering at AU Herning.
 ///				Designed to run on Beagle Bone Black.
 /// \author		Christoffer Wesselhoff
 /// \date		12/03-2020
@@ -58,19 +58,18 @@ public:
 };
 
 /// A child of the Adc class, contains functions that calculates the voltage,
-/// current or temperature, from the raw ADC input.
+///  from the raw ADC input.
 ///
 /// For use on the Voltage- and Current measuring circuits and the Temperature
 /// sensors in the PRO4 project.
 ///
 /// For more information on the functions see the Adc class.
-class Measurement: public Adc {	
+class Voltage: public Adc {	
 public: 
 	/// Constructor. Same as the the Adc constructor \param channel - An 
 	///< integer between 0 and 6 representing the ADC channel.						
-	Measurement(unsigned int channel) : Adc(channel){};
-
-	double voltage(); 		
+	Voltage(unsigned int channel) : Adc(channel){};
+	double measure(); 		
 	///< Takes a measurement from the ADC converts the raw value to the voltage
 	///< that was stepped down by the measuring circuit. 
 	///<
@@ -81,7 +80,21 @@ public:
 	///								\frac {24}{1.8}\f}
 	///< \return Voltage in volts between 0 - 24V. Measured by the voltage
 	///  circuit.
-	double current();		
+};
+
+/// A child of the Adc class, contains functions that calculates the
+///  current, from the raw ADC input.
+///
+/// For use on the Voltage- and Current measuring circuits and the Temperature
+/// sensors in the PRO4 project.
+///
+/// For more information on the functions see the Adc class.
+class Current: public Adc {	
+public: 
+	/// Constructor. Same as the the Adc constructor \param channel - An 
+	///< integer between 0 and 6 representing the ADC channel.						
+	Current(unsigned int channel) : Adc(channel){};
+	double measure();		
 	///< Takes a measurement from the ADC and converts the raw value to the
 	///< current drawn by the DC motor. 
 	///<
@@ -91,7 +104,21 @@ public:
 	///							 \\ \\  &=& \frac {Raw\_ADC \times \frac {1.8}
 	///								{4096} \times 5} {0.05}\f}
 	///< \return Current in ampere Measured by the current circuit.
-	double temperature();	
+};
+
+/// A child of the Adc class, contains functions that calculates the
+///  temperature, from the raw ADC input.
+///
+/// For use on the Voltage- and Current measuring circuits and the Temperature
+/// sensors in the PRO4 project.
+///
+/// For more information on the functions see the Adc class.
+class Temperature: public Adc {	
+public: 
+	/// Constructor. Same as the the Adc constructor \param channel - An 
+	///< integer between 0 and 6 representing the ADC channel.						
+	Temperature(unsigned int channel) : Adc(channel){};
+	double measure();	
 	///< Takes a measurement from the ADC and calculates the temperature
 	///< measured by the temperature sensor.
 	///<

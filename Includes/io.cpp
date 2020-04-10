@@ -95,17 +95,17 @@ int Adc::read() {
 	// Returns the raw value read from the path specified.
 }
 
-double Measurement::voltage() {
+double Voltage::measure() {
 	return read()*(VREF/ADC_RESOLUTION)*(MOTORVOLTAGE/VREF);
 	// Reads from ADC converts into 24V scale.
 }
 
-double Measurement::current() {
+double Current::measure() {
 	return (read()*(VREF/ADC_RESOLUTION)*IDA_GAIN)/R_SHUNT;
 	// Reads from ADC converts into current.
 }
 
-double Measurement::temperature() {
+double Temperature::measure() {
 	return (read()*(VREF/ADC_RESOLUTION)*100)-TEMP_OFFSET;
 	// Reads from ADC converts into celcius
 }
