@@ -1,24 +1,91 @@
-/*
- * states.cpp
- *
- *  Created on: 1 Apr 2020
- *      Author: Christoffer
- */
+///////////////////////////////////////////////////////////////////////////////
+/// \file		states.cpp
+///				Header file containing the functions configPin and whichMachine
+///				used in the PRO4 projekt at Electrical Engineering at AU
+///				Herning.
+/// \author		Christoffer Wesselhoff
+/// \author		Kasper Jensen
+/// \date		10/04-2020
+/// \version	1.0
+///////////////////////////////////////////////////////////////////////////////
 
-#include"startup.h"
+//#include"startup.h"
 #include"states.h"
 #include<thread>
 #include<chrono>
+#include<iostream>
+#include<string>
+#include<sstream>
+#include<cstdlib>
 
-#define IDLE_WAIT 5
-#define INTERNET_TEST "/home/blob/internettest.sh"
+using namespace std;
 
-int testConnection(void) {
-	int ret = system(INTERNET_TEST);
-	return WEXITSTATUS(ret);
-}
+int whichMachine();
+///< Looks up the environment variable MACHINE created by the startup script
+///< startup.sh and returns an integer representing the machine type
+///< \return 0 If machine is Beaglebone Black.
+///< \return 1 If machine is PocketBeagle.
+///< \return -1 If there is an error.
+bool configPin(string pin, string mode);
+///< Configures pin to a specific mode of operation, by calling the
+///< shell commands:
+///
+///  \code{.unparsed} configure-pin <pin> <mode>\endcode
+///  \code{.unparsed} configure-pin -q <pin>\endcode
+///
+///< To see which modes a pin can be configured to, use the command:
+///
+///  \code{.unparsed} configure-pin -i <pin>\endcode
+///
+///< \param pin - Location of pin to configure.
+///< \param mode - Mode which pin should be configured to.
+///< \return true on success.
+///< \return false on failure.
+int testConnection(void);
+///< Runs the internettest.sh script and returns the exit value.
+///< \return 0 On sucess
+///< \return -1 If there is an error.
+void Sleep(int seconds);
+///< Pauses the execution of the current thread for an amount of seconds.
+///< \param seconds - Amount of seconds to sleep.
+void readJSON(void);
+///< Not implemented yet
+///<
+void Lights(onOff state);
+///< Not implemented yet
+///< \param state -
+void Camera(onOff state);
+///< Not implemented yet
+///< \param state -
+void CoolingFan(onOff state);
+///< Not implemented yet
+///< \param state -
+void InitTimerInterrupt(void);
+///< Not implemented yet
+///<
+int CalculateSamples(int time);
+///< Not implemented yet
+///< \return nothing yet
+void SetLoad(load testload);
+///< Not implemented yet
+///< \param testload -
+void setupPID(void);
+///< Not implemented yet
+///<
+void CalculateDutycycle(float voltage);
+///< Not implemented yet
+///< \param voltage -
+void Test(void);
+///< Not implemented yet
+///<
+void WriteJSON(void);
+///< Not implemented yet
+///<
+void BlinkLed(led indication);
+///< Not implemented yet
+///< \param indication -
 
-enum state powerOnState(void){
+state powerOnState(void){
 	int machine = whichMachine();
 	if(machine == 1) {
 		if(!configPin("P1-31","qep")) {
@@ -44,41 +111,166 @@ enum state powerOnState(void){
 	}
 }
 
-enum state idleState(void){
+state idleState(void){
 	while(1){
 		if (testConfig.isRecieved)
 			return start_test;
 		else{
-			std::this_thread::sleep_for(std::chrono::seconds(IDLE_WAIT));
+			Sleep(IDLE_WAIT);
 			if (testConnection() != 0)
 				return error_connection;
 			// debug
-			std::cout << "no test recieved" << std::endl;
+			cout << "no test recieved" << endl;
 		}
 	}
 }
 
-enum state ErrorConnectionState(void) {
+state ErrorConnectionState(void) {
     int count = 0;
     while (1) {
         //BLINK LED PIN 3 TIMES
-        std::this_thread::sleep_for(std::chrono::seconds(IDLE_WAIT));
+        Sleep(IDLE_WAIT);
         if (testConnection() == 0) {
             return idle;
         }
         else {
             count++;
             if (count == 3) {
-            std::cout << "Still not resolved, rebooting now." << std::endl;
+            cout << "Still not resolved, rebooting now." << endl;
             system("reboot -h now");
             }
         }
     //debug
-    std::cout << "Connection error" << std::endl;
+    cout << "Connection error" << endl;
     }
 }
 
 void ErrorPinState(void) {
 	//debug
-	std::cout << "Pin error" << std::endl;
+	cout << "Pin error" << endl;
 }
+
+
+
+
+bool configPin(string pin, string mode){
+	stringstream commnd;			    // Stringsteam containing shell command
+	commnd << "config-pin " << pin << " " << mode;	// Assemble the stringsteam
+	if(system(commnd.str().c_str()) != 0){ 	   // Execute the assembled command
+		// Report error this should be changed to fit the error handling
+		cout << "Error during setup of " << pin << endl;
+		return false;
+	}
+	commnd.str(""); 									   // Clear stringsteam
+	commnd << "config-pin -q" << pin;			  // Assemble new shell command
+	if(system(commnd.str().c_str()) != 0) {    // Execute the assembled command
+		// Report error this should be changed to fit the error handling
+		cout << "Error during setup of " << pin << endl;
+		return false;
+	}
+	return true;
+}
+
+int whichMachine(){
+	string val; 			 // String variable for easy compare
+	val = getenv("MACHINE"); // Get value of environment variable machine
+	if(!val.compare("Black"))//	If Black return 0
+		return 0;
+	else if(!val.compare("PocketBeagle")) // If PocketBeagle return 1
+		return 1;
+	else					 // If not, return -1
+		return -1;
+}
+
+int testConnection(void) {
+	int ret = system(INTERNET_TEST);
+	return WEXITSTATUS(ret);
+}
+
+void Sleep(int seconds) {
+	this_thread::sleep_for(chrono::seconds(seconds));
+}
+
+void readJSON(void){
+	//TO DO setup function for taking configuration from JSON file
+	// fill in class named testConfig in states.h
+	// isRecieved is flag for config recieved
+	cout << "Reading config!" << endl;
+}
+
+void Lights(onOff state) {
+	//TO DO setup function to turn lights on or off with input as enum on or off
+	cout << "Fiddling with light!" << endl;
+}
+
+void Camera(onOff state) {
+	//TO DO setup function to turn camera on or off with input as enum on or off
+	cout << "Fiddling with camera!" << endl;
+}
+
+void CoolingFan(onOff state) {
+	//TO DO setup function to turn cooling fan on or off with input as enum on or off
+	cout << "Fiddling with cooling fan!" << endl;
+}
+
+void InitTimerInterrupt(void) {
+	//TO DO setup timer interrupt with 10ms time span
+	cout << "Initialising Timer!" << endl;
+}
+
+int CalculateSamples(int time) {
+	//TO DO calculate how many sets of samples we get from time
+	//return numberOfSamples as integer
+	return 1;
+	cout << "Calculating Samples!" << endl;
+}
+
+void SetLoad(load testload){
+	//TO DO set load specified by config
+	cout << "Setting load!" << endl;
+}
+
+/////////////////////////////Pid Test Init/////////////////////////////////////
+
+void setupPID(void){
+	//TO DO setup pid regulation for motor with desired rpm
+	cout << "setting rpm!" << endl;
+}
+
+
+///////////////////////////Voltage Test Init///////////////////////////////////
+
+void CalculateDutycycle(float voltage) {
+	//TO DO calculate Dutycycle to get RMS voltage level of desired voltage
+	//24 VDC with 100% dutycycle
+	//set PWM
+	cout << "calculating duty cycle!" << endl;
+}
+
+/////////////////////////////Test//////////////////////////////////////////////
+
+void Test(void){
+	//TO DO setup test reading current, voltage, Temperature, ambient Temperature
+	// & rpm for each timer interrupt.
+	// increment counter for each sample set and end test once desired samples aquired
+	// each set of samples are saved in a linked list consisting of structs
+	cout << "Testing!" << endl;
+}
+
+///////////////////////////Return Results//////////////////////////////////////
+
+void WriteJSON(void){
+	//TO DO cycle through linked list with samples and write into JSON file
+	// free memory of structs in linked list
+	// set flag for test complete
+	cout << "Returning Results!" << endl;
+}
+
+//////////////////////Error, Warning, Busy & OK////////////////////////////////
+
+void BlinkLed(led indication){
+	//TO DO setup blink of specified LED indication
+	cout << "Blinking LED Indication!" << endl;
+}
+
+///////////////////////////////////////////////////////////////////////////////
