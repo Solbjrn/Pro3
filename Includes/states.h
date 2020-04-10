@@ -20,7 +20,7 @@ public:
 
 enum state powerOnState(void);
 enum state idleState(void);
-void ErrorConnectionState(void);
+enum state ErrorConnectionState(void);
 void ErrorPinState(void);
 
 

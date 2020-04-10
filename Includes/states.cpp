@@ -58,9 +58,24 @@ enum state idleState(void){
 	}
 }
 
-void ErrorConnectionState(void) {
-	//debug
-	std::cout << "Connection error" << std::endl;
+enum state ErrorConnectionState(void) {
+    int count = 0;
+    while (1) {
+        //BLINK LED PIN 3 TIMES
+        std::this_thread::sleep_for(std::chrono::seconds(IDLE_WAIT));
+        if (testConnection() == 0) {
+            return idle;
+        }
+        else {
+            count++;
+            if (count == 3) {
+            std::cout << "Still not resolved, rebooting now." << std::endl;
+            system("reboot -h now");
+            }
+        }
+    //debug
+    std::cout << "Connection error" << std::endl;
+    }
 }
 
 void ErrorPinState(void) {
