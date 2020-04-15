@@ -11,6 +11,7 @@
 
 //#include"startup.h"
 #include"states.h"
+#include"io.h"
 #include<thread>
 #include<chrono>
 #include<iostream>
@@ -18,7 +19,11 @@
 #include<sstream>
 #include<cstdlib>
 
+#define LIGHT 46			///< Kernel number for P8-16
+
 using namespace std;
+
+Gpio Light(LIGHT,"out");	///< Object for controlling internal lights.
 
 int whichMachine();
 ///< Looks up the environment variable MACHINE created by the startup script
@@ -52,8 +57,8 @@ void readJSON(void);
 ///< Not implemented yet
 ///<
 void Lights(onOff state);
-///< Not implemented yet
-///< \param state -
+///< Turns internal light on or off
+///< \param state - on or off.
 void Camera(onOff state);
 ///< Not implemented yet
 ///< \param state -
@@ -103,6 +108,9 @@ state powerOnState(void){
 			return error_pin;
 		}
 	}
+	//debug
+	Lights(on);
+	Lights(off);
 	if (testConnection() == 0) {
 		return idle;
 	}
@@ -113,6 +121,7 @@ state powerOnState(void){
 
 state idleState(void){
 	while(1){
+
 		if (testConfig.isRecieved)
 			return start_test;
 		else{
@@ -149,9 +158,6 @@ void ErrorPinState(void) {
 	//debug
 	cout << "Pin error" << endl;
 }
-
-
-
 
 bool configPin(string pin, string mode){
 	stringstream commnd;			    // Stringsteam containing shell command
@@ -199,7 +205,11 @@ void readJSON(void){
 }
 
 void Lights(onOff state) {
-	//TO DO setup function to turn lights on or off with input as enum on or off
+	if(state == on)
+		Light.write(1);
+	else if(state == off)
+		Light.write(0);
+	//debug
 	cout << "Fiddling with light!" << endl;
 }
 
