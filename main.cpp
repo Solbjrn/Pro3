@@ -8,9 +8,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include<stdlib.h>
-#include<stdio.h>
-#include "includes/startup.h"
-#include "includes/states.h"
+#include<iostream>
+#include "Includes/states.h"
 
 using namespace std;
 
