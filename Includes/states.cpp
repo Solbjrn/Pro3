@@ -9,15 +9,17 @@
 /// \version	1.0
 ///////////////////////////////////////////////////////////////////////////////
 
-//#include"startup.h"
 #include"states.h"
 #include"io.h"
 #include<thread>
 #include<chrono>
 #include<iostream>
 #include<string>
+#include<string.h>
 #include<sstream>
 #include<cstdlib>
+#include <sys/time.h>
+#include <signal.h>
 
 #define LIGHT 46			///< Kernel number for P8-16
 
@@ -65,9 +67,13 @@ void Camera(onOff state);
 void CoolingFan(onOff state);
 ///< Not implemented yet
 ///< \param state -
-void InitTimerInterrupt(void);
-///< Not implemented yet
-///<
+void InitTimerInterrupt(int sec, int usec);
+///< Initiates a timer which calls timerHandler with the interval specified.
+///< \param sec - Amount of seconds to set the timer interval.
+///< \param usec - Amount of microseconds to set the timer interval.
+void timerHandler (int signum);
+///< Timer handler, which which is executed every timer expires.
+///< Should be changed to take measurements under test.
 int CalculateSamples(int time);
 ///< Not implemented yet
 ///< \return nothing yet
@@ -109,8 +115,7 @@ state powerOnState(void){
 		}
 	}
 	//debug
-	Lights(on);
-	Lights(off);
+	InitTimerInterrupt(0, 10000);
 	if (testConnection() == 0) {
 		return idle;
 	}
@@ -223,9 +228,43 @@ void CoolingFan(onOff state) {
 	cout << "Fiddling with cooling fan!" << endl;
 }
 
-void InitTimerInterrupt(void) {
+void InitTimerInterrupt(int sec, int usec) {
+	struct sigaction act;
+	struct itimerval timer;
+	memset (&act, '\0', sizeof(act));
+	// Install a signal handler, set it to timerHandler
+	act.sa_handler = &timerHandler;
+	// Install the signal handler and relate it to the SIGALRM flag
+	int ret = sigaction (SIGALRM, &act, NULL);
+	if (ret)
+	{
+		cout << "timer signal handler failed to install" << endl;
+		exit (EXIT_FAILURE);
+	}
+	// Configure timer to expire after sec.usec seconds
+	timer.it_value.tv_sec = sec;
+	timer.it_value.tv_usec = usec;
+	// and every sec.usec after that
+	timer.it_interval.tv_sec = sec;
+	timer.it_interval.tv_usec = usec;
+	//Start virtual timer, it counts down whenever this process is executing.
+	ret = setitimer (ITIMER_REAL, &timer, NULL);
+	if (ret) {
+		cout << "Could not install timer" << endl;
+		exit (EXIT_FAILURE);
+	}
+	cout << "timer installed successfully." << endl;
 	//TO DO setup timer interrupt with 10ms time span
 	cout << "Initialising Timer!" << endl;
+}
+
+void timerHandler (int signum) {
+	if (signum == SIGALRM) {
+		//debug
+		Lights(on);
+		Lights(off);
+		cout << "Timer handler" << endl;
+	}
 }
 
 int CalculateSamples(int time) {
