@@ -24,7 +24,9 @@ enum state{
 	start_test,			///< Start test state.
 	idle,				///< Idle state.
 	error_pin,			///< Pin configuration error state.
-	error_connection	///< Internet connection error state
+	error_connection,	///< Internet connection error state
+	voltage_test_init,	///< %Voltage test init state.
+	test				///< Test stage.
 };
 
 /// Possible states for the Light, cooling fan and camera.
@@ -84,6 +86,10 @@ state idleState(void);
 ///< available.
 ///< \return error_pin if pins were incorrectly setup.
 ///< \return error_connection if internet is not available.
+state voltageTestInit(void);
+///< State for initializing voltage test.
+///< Calculates dutycycle and sets next stage to test.
+///< \return test
 state ErrorConnectionState(void);
 ///< State for powering up device, configures pins and tests internet
 ///< connection. Returns next state.

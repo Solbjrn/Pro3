@@ -18,8 +18,10 @@
 #include<string.h>
 #include<sstream>
 #include<cstdlib>
-#include <sys/time.h>
-#include <signal.h>
+#include<sys/time.h>
+#include<signal.h>
+#include<linux/gpio.h>
+#include<interrupt.h>
 
 #define LIGHT 46			///< Kernel number for P8-16
 
@@ -137,6 +139,18 @@ state idleState(void){
 			cout << "no test recieved" << endl;
 		}
 	}
+}
+
+state voltageTestInit(void) {
+	if(testConfig.voltage >= 0 && testConfig.voltage <= 24){
+		CalculateDutycycle(testConfig.voltage);
+	}
+	else {
+		cout << "invalid voltage value:" << testConfig.voltage <<
+				" (should be 0-24)" << endl;
+	}
+
+	return test;
 }
 
 state ErrorConnectionState(void) {
