@@ -86,9 +86,13 @@ state idleState(void);
 ///< available.
 ///< \return error_pin if pins were incorrectly setup.
 ///< \return error_connection if internet is not available.
-state voltageTestInit(void);
+state VoltageTestInit(void);
 ///< State for initializing voltage test.
 ///< Calculates dutycycle and sets next stage to test.
+///< \return test
+state PIDTestInit(void);
+///< State for initializing PID test.
+///< Should setup prerequisites for PID test
 ///< \return test
 state ErrorConnectionState(void);
 ///< State for powering up device, configures pins and tests internet

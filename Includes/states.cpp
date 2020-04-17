@@ -20,8 +20,6 @@
 #include<cstdlib>
 #include<sys/time.h>
 #include<signal.h>
-#include<linux/gpio.h>
-#include<interrupt.h>
 
 #define LIGHT 46			///< Kernel number for P8-16
 
@@ -141,15 +139,23 @@ state idleState(void){
 	}
 }
 
-state voltageTestInit(void) {
-	if(testConfig.voltage >= 0 && testConfig.voltage <= 24){
+state VoltageTestInit(void) {
+	// Maybe input checks should be in the web interface
+	if(testConfig.voltage >= 0 && testConfig.voltage <= 24) {
 		CalculateDutycycle(testConfig.voltage);
+		testConfig.isPID = false;
 	}
 	else {
 		cout << "invalid voltage value:" << testConfig.voltage <<
 				" (should be 0-24)" << endl;
 	}
 
+	return test;
+}
+
+state PIDTestInit(void) {
+	// Set up PID prerequisites
+	testConfig.isPID = true;
 	return test;
 }
 
