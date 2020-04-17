@@ -40,7 +40,28 @@ int main(void) {
 			break;
 		case start_test:
 			//debug
-			cout << "Test started" << endl;
+			cout << "testStart" << endl;
+			exitvar = true;
+			break;
+		case voltage_test_init:
+			//debug
+			cout << "voltage test start" << endl;
+			exitvar = true;
+			break;
+		case pid_test_init:
+			//debug
+			cout << "pid test start" << endl;
+			exitvar = true;
+			break;
+		case test:
+			//debug
+			cout << "Test state" << endl;
+			next_state = TestState();
+			break;
+		case return_results:
+			//debug
+			cout << "Return result" << endl;
+			next_state = ReturnResultsState();
 			exitvar = true;
 			break;
 		default:

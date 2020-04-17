@@ -21,11 +21,22 @@
 #include<sys/time.h>
 #include<signal.h>
 
-#define LIGHT 46			///< Kernel number for P8-16
+#define MAXTIME 300					///< Max time for test in seconds.
+#define MAXSAMPLES	MAXTIME*100		///< Max number of samples in a test.
+#define LIGHT 46					///< Kernel number for P8-16
 
 using namespace std;
 
-Gpio Light(LIGHT,"out");	///< Object for controlling internal lights.
+volatile unsigned int testCounter;	///< Counter to keep track of sampling
+volatile unsigned int testSamples;	///< Holds amount of samples in test
+volatile bool testRunning;			///< True while test is running.
+
+Voltage vol(1);						///< Voltage measuring object P9-40.
+Current curr(3);					///< Current measuring object P9-38.
+Temperature temp(2);				///< Temperature measuring object P9-37.
+Result results[MAXSAMPLES];			///< Array of result structs.
+
+Gpio Light(LIGHT,"out");			///< Object for controlling internal lights
 
 int whichMachine();
 ///< Looks up the environment variable MACHINE created by the startup script
@@ -69,12 +80,13 @@ void CoolingFan(onOff state);
 ///< \param state -
 void InitTimerInterrupt(int sec, int usec);
 ///< Initiates a timer which calls timerHandler with the interval specified.
+///< Set time to 0 to Stop timer.
 ///< \param sec - Amount of seconds to set the timer interval.
 ///< \param usec - Amount of microseconds to set the timer interval.
 void timerHandler (int signum);
 ///< Timer handler, which which is executed every timer expires.
-///< Should be changed to take measurements under test.
-int CalculateSamples(int time);
+///< Takes Voltage, Current and Temperature measurements under test.
+int CalculateSamples(float time);
 ///< Not implemented yet
 ///< \return nothing yet
 void SetLoad(load testload);
@@ -86,9 +98,6 @@ void setupPID(void);
 void CalculateDutycycle(float voltage);
 ///< Not implemented yet
 ///< \param voltage -
-void Test(void);
-///< Not implemented yet
-///<
 void WriteJSON(void);
 ///< Not implemented yet
 ///<
@@ -115,7 +124,7 @@ state powerOnState(void){
 		}
 	}
 	//debug
-	InitTimerInterrupt(0, 10000);
+
 	if (testConnection() == 0) {
 		return idle;
 	}
@@ -157,6 +166,29 @@ state PIDTestInit(void) {
 	// Set up PID prerequisites
 	testConfig.isPID = true;
 	return test;
+}
+
+state TestState(void){
+	testSamples = CalculateSamples(testConfig.timeInSeconds);
+	memset (results, '\0', sizeof(results));
+	testCounter = 0;
+	testRunning = true;
+	InitTimerInterrupt(0, 10000);
+	cout << "Testing!" << endl;
+	while(testRunning) {
+		// Want to do something while testing?
+	}
+	cout << "Test Ended" << endl;
+	return return_results;
+}
+
+state ReturnResultsState(void){
+	//debug
+	for(unsigned int i = 0; i<=testSamples;i++){
+		cout << results[i].voltage << " " << results[i].current << " "
+			 << results[i].temperature << " " << results[i].timestamp << endl;
+	}
+	return error_pin;
 }
 
 state ErrorConnectionState(void) {
@@ -280,17 +312,23 @@ void InitTimerInterrupt(int sec, int usec) {
 
 void timerHandler (int signum) {
 	if (signum == SIGALRM) {
-		//debug
-		Lights(on);
-		Lights(off);
 		cout << "Timer handler" << endl;
+		results[testCounter].voltage = vol.measure();
+		results[testCounter].current = curr.measure();
+		results[testCounter].temperature = temp.measure();
+		results[testCounter].timestamp = testCounter*0.01;
+		if(testCounter == testSamples) {
+			InitTimerInterrupt(0, 0);
+			testRunning = false;
+		}
+		testCounter++;
 	}
 }
 
-int CalculateSamples(int time) {
+int CalculateSamples(float time) {
 	//TO DO calculate how many sets of samples we get from time
 	//return numberOfSamples as integer
-	return 1;
+	return time*100;
 	cout << "Calculating Samples!" << endl;
 }
 
@@ -314,16 +352,6 @@ void CalculateDutycycle(float voltage) {
 	//24 VDC with 100% dutycycle
 	//set PWM
 	cout << "calculating duty cycle!" << endl;
-}
-
-/////////////////////////////Test//////////////////////////////////////////////
-
-void Test(void){
-	//TO DO setup test reading current, voltage, Temperature, ambient Temperature
-	// & rpm for each timer interrupt.
-	// increment counter for each sample set and end test once desired samples aquired
-	// each set of samples are saved in a linked list consisting of structs
-	cout << "Testing!" << endl;
 }
 
 ///////////////////////////Return Results//////////////////////////////////////

@@ -26,7 +26,9 @@ enum state{
 	error_pin,			///< Pin configuration error state.
 	error_connection,	///< Internet connection error state
 	voltage_test_init,	///< %Voltage test init state.
-	test				///< Test stage.
+	pid_test_init,		///< PID test init state.
+	test,				///< Test stage.
+	return_results		///< Return results state.
 };
 
 /// Possible states for the Light, cooling fan and camera.
@@ -65,11 +67,26 @@ public:
 	///< If isPID is true, this should contain the desired speed.
 	float voltage;
 	///< If isPID is false, this should contain the desired speed.
-	int timeInSeconds;
+	float timeInSeconds;
 	///< Amount of seconds the test should run.
 }static testConfig;
 ///< Object of the Config class.
 ///<
+
+/// \struct Result
+///< Struct to hold results from test.
+struct Result{
+	double voltage;
+	///< Voltage measured
+	double current;
+	///< Current measured
+	double temperature;
+	///< Temperature in celcuis measured
+	double rpm;
+	///< Revolutions per minute measured.
+	double timestamp;
+	///< Time since test has started
+};
 
 state powerOnState(void);
 ///< State for powering up device, configures pins and tests internet
@@ -94,6 +111,12 @@ state PIDTestInit(void);
 ///< State for initializing PID test.
 ///< Should setup prerequisites for PID test
 ///< \return test
+state TestState(void);
+///< State where the test is running.
+///< \return return_results.
+state ReturnResultsState(void);
+///< State where results from the test is processed
+///< \return Should be idle?.
 state ErrorConnectionState(void);
 ///< State for powering up device, configures pins and tests internet
 ///< connection. Returns next state.
