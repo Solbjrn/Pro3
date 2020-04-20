@@ -1,0 +1,122 @@
+#include <iostream>
+#include "rapidJSON.h"
+#include "rapidjson/schema.h"
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+#include "json.h"
+#include "json/writer.h"
+
+#define FILEPATH "filepath.schema"
+
+using namespace std;
+using namespace rapidjson;
+
+
+
+struct Result
+{
+	double voltage[];
+
+	double current[];
+
+	double temperature[];
+
+	double rpm[];
+
+	double timestamp[];
+
+};
+
+struct Result Results;
+
+
+void WriteJSON(struct Results)
+{
+	//initialise the json schema
+	Json::Value value_obj;
+
+	//what the fk shall i put here?!
+	value_obj["$schema"] = "AU-Team3";
+	value_obj["title"] = "Payload";
+	value_obj["type"] = "objekt";
+	value_obj["properties"]["protocolVersion"] = "V1-Le Guldfisk";
+	value_obj["properties"]["sentBy"] = "Team3 teststation";
+	value_obj["properties"]["msgType"] = "data?";
+	value_obj["properties"]["commandList"] = "idk";
+	value_obj["properties"]["statusCode"] = "100";
+	value_obj["properties"]["parameterObj"] = "????????????";
+
+	//Values are copied into the json schema from the results struct.
+	value_obj["properties"]["dataObj"]["voltage"] = Results.voltage;
+	value_obj["properties"]["dataObj"]["current"] = Results.current;
+	value_obj["properties"]["dataObj"]["temperature"] = Results.temperature;
+	value_obj["properties"]["dataObj"]["rpm"] = Results.rpm;
+	value_obj["properties"]["dataObj"]["timestamp"] = Results.timestamp;
+
+	//DO I HAVE TO INCLUDE THIS????
+	value_obj["required"]["protocolVersion"] = "V1-Le Guldfisk"; ]
+	value_obj["required"]["sentBy"] = "Team3 teststation";
+	value_obj["required"]["msgType"] = "data?";
+	value_obj["required"]["statusCode"] = "100";
+
+	//writes the json schema into the output file. 
+	Json::StreamWriterBuilder builder;
+	builder["commentStyle"] = "None";
+	builder["indentation"] = "   ";
+
+	std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+	std::ofstream outputFileStream(Filepath);
+	writer->write(value_obj, &outputFileStream);
+
+	//closes the output file
+	std::ofstream outputFileStream.close();
+
+	//random cout
+	std::cout << "Returning Results" << std:endl;
+}
+
+
+struct config
+{
+	bool isRecieved;
+
+	bool isPID;
+
+	float rpm;
+
+	float voltage;
+
+	float timeInSeconds;
+
+};
+
+
+
+struct config configS
+
+struct ReadJSON(struct configS);
+{
+	//Opens the file recieved.
+	std::ofstream obj_file(Filepath);
+	obj_file >> obj;
+
+	//reads the files values out of it's json schema and into our config struct
+	configS.isPID << obj["properties"]["dataobj"]["isPID"];
+	configS.rpm << obj["properties"]["dataobj"]["rpm"];
+	configS.voltage << obj["properties"]["dataobj"]["voltage"];
+	configS.timeInSeconds << obj["properties"]["dataobj"]["timeInSeconds"];
+	
+	//closes the input file
+	std::ofstream obj_file.close();
+
+	return configS;
+}
+
+
+void Camera(onOff state);
+{
+	//does fancy stuff with the camera
+	if (state = on) system("snap connect mjpg-streamer:camera");
+	else if (state = off) system("snap disconnect mjpg-streamer:camera");
+}
