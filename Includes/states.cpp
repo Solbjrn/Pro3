@@ -24,6 +24,13 @@
 #define MAXTIME 300					///< Max time for test in seconds.
 #define MAXSAMPLES	MAXTIME*100		///< Max number of samples in a test.
 #define LIGHT 46					///< Kernel number for P8-16
+#define FAN 87 						///< Find nummer for P1_2
+#define LOAD1 89 					///< Find nummer for P1_4
+#define LOAD2 5 					///< Find nummer for P1_6
+#define ERRORLED 2 					///< Find nummer for P1_8
+#define WARNINGLED 3 				///< Find nummer for P1_10
+#define OKLED 4 					///< Find nummer for P1_12
+#define BUSYLED 20 					///< Find nummer for P1_20
 
 using namespace std;
 
@@ -36,7 +43,14 @@ Current curr(3);					///< Current measuring object P9-38.
 Temperature temp(2);				///< Temperature measuring object P9-37.
 Result results[MAXSAMPLES];			///< Array of result structs.
 
-Gpio Light(LIGHT,"out");			///< Object for controlling internal lights
+Gpio Light(LIGHT,"out");			///< Object for controlling internal lights.
+Gpio CoolingFan(FAN, "out");		///< Object for controlling cooling fan.
+Gpio Load1(LOAD1, "out");			///< Object for controlling Load.
+Gpio Load2(LOAD2, "out");			///< Object for controlling Load.
+Gpio ErrLed(ERRORLED, "out");		///< Object for controlling error LED.
+Gpio WarnLed(WARNINGLED, "out");	///< Object for controlling warning LED.
+Gpio OKLed(OKLED, "out");			///< Object for controlling ok LED.
+Gpio BusyLed(BUSYLED, "out");		///< Object for controlling busy LED.
 
 int whichMachine();
 ///< Looks up the environment variable MACHINE created by the startup script
@@ -75,9 +89,9 @@ void Lights(onOff state);
 void Camera(onOff state);
 ///< Not implemented yet
 ///< \param state -
-void CoolingFan(onOff state);
-///< Not implemented yet
-///< \param state -
+void CoolingFAN(onOff state);
+///< Turns cooling fan on or off
+///< \param state - on or off.
 void InitTimerInterrupt(int sec, int usec);
 ///< Initiates a timer which calls timerHandler with the interval specified.
 ///< Set time to 0 to Stop timer.
@@ -86,24 +100,34 @@ void InitTimerInterrupt(int sec, int usec);
 void timerHandler (int signum);
 ///< Timer handler, which which is executed every timer expires.
 ///< Takes Voltage, Current and Temperature measurements under test.
-int CalculateSamples(float time);
-///< Not implemented yet
-///< \return nothing yet
+int CalculateSamples(int time);
+///< Converts time in seconds for testing to number of samples to collect.
+///<
+///< The equation used to calculate samples:
+///< \f{eqnarray*}{ Samples &=& time \times 100\f}
+///< \param time - Duration of test in seconds.
+///< \return number of samples calculated to collect in test.
 void SetLoad(load testload);
-///< Not implemented yet
-///< \param testload -
+///< Toggles GPIO pins for desired load level.
+///< \param testload - minimum: Turns off both pins.
+///< medium: Turns on one pin and other off.
+///< maximum: Turns both pins on.
 void setupPID(void);
 ///< Not implemented yet
 ///<
-void CalculateDutycycle(float voltage);
-///< Not implemented yet
-///< \param voltage -
+float CalculateDutycycle(float voltage);
+///< Calculates dutycycle of pwm for motor, based on desired voltage.
+///< The equation used to calculate the dutycycle:
+///<\f{eqnarray*}{ Dutycycle &=& \frac {voltage} {MOTORVOLTAGE} \times 100
+///							 \\ \\  &=& \frac {voltage} {24} \times 100 \f}
+///< \param voltage - Desired voltage level
+///< \return Dutycycle calculated.
 void WriteJSON(void);
 ///< Not implemented yet
 ///<
 void BlinkLed(led indication);
-///< Not implemented yet
-///< \param indication -
+///< Blink led indication 3 times, led is chosen by the indication argument.
+///< \param indication - ok, busy, warning or error.
 
 state powerOnState(void){
 	int machine = whichMachine();
@@ -275,9 +299,16 @@ void Camera(onOff state) {
 	cout << "Fiddling with camera!" << endl;
 }
 
-void CoolingFan(onOff state) {
-	//TO DO setup function to turn cooling fan on or off with input as enum on or off
+void CoolingFAN(onOff state) {
 	cout << "Fiddling with cooling fan!" << endl;
+	if (state == on) {
+		CoolingFan.write(1);
+		std::cout << "Fan is on!" << std::endl;
+	}
+	if (state == off) {
+		CoolingFan.write(0);
+		std::cout << "Fan is off!" << std::endl;
+	}
 }
 
 void InitTimerInterrupt(int sec, int usec) {
@@ -325,16 +356,42 @@ void timerHandler (int signum) {
 	}
 }
 
-int CalculateSamples(float time) {
-	//TO DO calculate how many sets of samples we get from time
-	//return numberOfSamples as integer
-	return time*100;
+int CalculateSamples(int time) {
 	cout << "Calculating Samples!" << endl;
+
+	if (time <= 0) {
+		std::cout << "Invalid value for time!" << std::endl;
+		return -1;
+	} else {
+		std::cout << "Time selected in seconds is: " << time << " seconds"
+				<< std::endl;
+		const int SAMPLINGTIME = 100;
+		int NumberOfSamples = 0;
+
+		//Samples = time/0.01 or Samples = time*100
+		NumberOfSamples = time * SAMPLINGTIME;
+		std::cout << "Number of samples to collect: " << NumberOfSamples << std::endl;
+
+		//return int containing desired number of samples
+		return NumberOfSamples;
+	}
 }
 
-void SetLoad(load testload){
-	//TO DO set load specified by config
+void SetLoad(load testload) {
 	cout << "Setting load!" << endl;
+	if (testload == minimum) {
+		Load1.write(0);
+		Load2.write(0);
+		std::cout << "Minimal load!" << std::endl;
+	} else if (testload == medium) {
+		Load1.write(1);
+		Load2.write(0);
+		std::cout << "Medium load!" << std::endl;
+	} else if (testload == maximum) {
+		Load1.write(1);
+		Load2.write(1);
+		std::cout << "Maximum load!" << std::endl;
+	}
 }
 
 /////////////////////////////Pid Test Init/////////////////////////////////////
@@ -347,11 +404,20 @@ void setupPID(void){
 
 ///////////////////////////Voltage Test Init///////////////////////////////////
 
-void CalculateDutycycle(float voltage) {
-	//TO DO calculate Dutycycle to get RMS voltage level of desired voltage
-	//24 VDC with 100% dutycycle
-	//set PWM
+float CalculateDutycycle(float voltage) {
 	cout << "calculating duty cycle!" << endl;
+	float Dutycycle = 0;
+	// Maybe input check should be performed in the webinterface
+	if (voltage <= 0 || voltage > 24) {
+		std::cout << "Invalid voltage level must be above 0 and 24 or below!"
+				<< std::endl;
+		return -1;
+	} else {
+		Dutycycle = (voltage / MOTORVOLTAGE) * 100;
+		std::cout << "Dutycycle calculated to: " << Dutycycle << " %"
+				<< std::endl;
+		return Dutycycle;
+	}
 }
 
 ///////////////////////////Return Results//////////////////////////////////////
@@ -365,9 +431,42 @@ void WriteJSON(void){
 
 //////////////////////Error, Warning, Busy & OK////////////////////////////////
 
-void BlinkLed(led indication){
-	//TO DO setup blink of specified LED indication
+void BlinkLed(led indication) {
+
 	cout << "Blinking LED Indication!" << endl;
+	if (indication == error) {
+		std::cout << "ERROR" << std::endl;
+		for (int i = 0; i < 3; i++) {
+			ErrLed.write(1);
+			Sleep(1);
+			ErrLed.write(0);
+			Sleep(1);
+		}
+	} else if (indication == warning) {
+		std::cout << "WARNING" << std::endl;
+		for (int i = 0; i < 3; i++) {
+			WarnLed.write(1);
+			Sleep(1);
+			WarnLed.write(0);
+			Sleep(1);
+		}
+	} else if (indication == ok) {
+		std::cout << "OK" << std::endl;
+		for (int i = 0; i < 3; i++) {
+			OKLed.write(1);
+			Sleep(1);
+			OKLed.write(0);
+			Sleep(1);
+		}
+	} else if (indication == busy) {
+		std::cout << "BUSY" << std::endl;
+		for (int i = 0; i < 3; i++) {
+			BusyLed.write(1);
+			Sleep(1);
+			BusyLed.write(0);
+			Sleep(1);
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
