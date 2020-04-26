@@ -26,6 +26,8 @@ struct Result
 
 	double timestamp[];
 
+	struct Result *next;
+
 };
 
 struct Result Results;
@@ -33,6 +35,28 @@ struct Result Results;
 
 void WriteJSON(struct Results)
 {
+	double voltage[];
+	double current[];
+	double temperature[];
+	double rpm[];
+	double timestamp[];
+
+	int sample = 0;
+
+	struct Result *tmp;
+
+	while ( Results->next != NULL)
+	{
+	tmp = Results;
+	voltage[sample]=Results.voltage;
+	current[sample]=Results.current;
+	temperature[sample]=Results.temperature;
+	rpm[sample]=Results.rpm;
+	timestamp[sample]=Results.timestamp;
+	sample++;
+	free(tmp);
+	}
+
 	//initialise the json schema
 	Json::Value value_obj;
 
@@ -40,25 +64,25 @@ void WriteJSON(struct Results)
 	value_obj["$schema"] = "AU-Team3";
 	value_obj["title"] = "Payload";
 	value_obj["type"] = "objekt";
-	value_obj["properties"]["protocolVersion"] = "V1-Le Guldfisk";
+	value_obj["properties"]["protocolVersion"] = "insert here";
 	value_obj["properties"]["sentBy"] = "Team3 teststation";
-	value_obj["properties"]["msgType"] = "data?";
-	value_obj["properties"]["commandList"] = "idk";
-	value_obj["properties"]["statusCode"] = "100";
-	value_obj["properties"]["parameterObj"] = "????????????";
+	value_obj["properties"]["msgType"] = "insert here";
+	value_obj["properties"]["commandList"] = "insert here";
+	value_obj["properties"]["statusCode"] = "insert here";
+	value_obj["properties"]["parameterObj"] = "insert here";
 
 	//Values are copied into the json schema from the results struct.
-	value_obj["properties"]["dataObj"]["voltage"] = Results.voltage;
-	value_obj["properties"]["dataObj"]["current"] = Results.current;
-	value_obj["properties"]["dataObj"]["temperature"] = Results.temperature;
-	value_obj["properties"]["dataObj"]["rpm"] = Results.rpm;
-	value_obj["properties"]["dataObj"]["timestamp"] = Results.timestamp;
+	value_obj["properties"]["dataObj"]["voltage"] = voltage;
+	value_obj["properties"]["dataObj"]["current"] = current;
+	value_obj["properties"]["dataObj"]["temperature"] = temperature;
+	value_obj["properties"]["dataObj"]["rpm"] = rpm;
+	value_obj["properties"]["dataObj"]["timestamp"] = timestamp;
 
 	//DO I HAVE TO INCLUDE THIS????
-	value_obj["required"]["protocolVersion"] = "V1-Le Guldfisk"; ]
+	value_obj["required"]["protocolVersion"] = "insert here"; ]
 	value_obj["required"]["sentBy"] = "Team3 teststation";
-	value_obj["required"]["msgType"] = "data?";
-	value_obj["required"]["statusCode"] = "100";
+	value_obj["required"]["msgType"] = "insert here";
+	value_obj["required"]["statusCode"] = "insert here";
 
 	//writes the json schema into the output file. 
 	Json::StreamWriterBuilder builder;
