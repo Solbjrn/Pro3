@@ -26,7 +26,7 @@ struct Result
 
 	double timestamp[];
 
-	struct Result *next;
+	struct Result* next;
 
 };
 
@@ -35,28 +35,6 @@ struct Result Results;
 
 void WriteJSON(struct Results)
 {
-	double voltage[];
-	double current[];
-	double temperature[];
-	double rpm[];
-	double timestamp[];
-
-	int sample = 0;
-
-	struct Result *tmp;
-
-	while ( Results->next != NULL)
-	{
-	tmp = Results;
-	voltage[sample]=Results.voltage;
-	current[sample]=Results.current;
-	temperature[sample]=Results.temperature;
-	rpm[sample]=Results.rpm;
-	timestamp[sample]=Results.timestamp;
-	sample++;
-	free(tmp);
-	}
-
 	//initialise the json schema
 	Json::Value value_obj;
 
@@ -72,11 +50,11 @@ void WriteJSON(struct Results)
 	value_obj["properties"]["parameterObj"] = "insert here";
 
 	//Values are copied into the json schema from the results struct.
-	value_obj["properties"]["dataObj"]["voltage"] = voltage;
-	value_obj["properties"]["dataObj"]["current"] = current;
-	value_obj["properties"]["dataObj"]["temperature"] = temperature;
-	value_obj["properties"]["dataObj"]["rpm"] = rpm;
-	value_obj["properties"]["dataObj"]["timestamp"] = timestamp;
+	value_obj["properties"]["dataObj"]["voltage"] = Results.voltage;
+	value_obj["properties"]["dataObj"]["current"] = Results.current;
+	value_obj["properties"]["dataObj"]["temperature"] = Results.temperature;
+	value_obj["properties"]["dataObj"]["rpm"] = Results.rpm;
+	value_obj["properties"]["dataObj"]["timestamp"] = Results.timestamp;
 
 	//DO I HAVE TO INCLUDE THIS????
 	value_obj["required"]["protocolVersion"] = "insert here"; ]
@@ -119,7 +97,7 @@ struct config
 
 struct config configS
 
-struct ReadJSON(struct configS);
+	struct ReadJSON(struct configS);
 {
 	//Opens the file recieved.
 	std::ofstream obj_file(Filepath);
@@ -130,7 +108,7 @@ struct ReadJSON(struct configS);
 	configS.rpm << obj["properties"]["dataobj"]["rpm"];
 	configS.voltage << obj["properties"]["dataobj"]["voltage"];
 	configS.timeInSeconds << obj["properties"]["dataobj"]["timeInSeconds"];
-	
+
 	//closes the input file
 	std::ofstream obj_file.close();
 
